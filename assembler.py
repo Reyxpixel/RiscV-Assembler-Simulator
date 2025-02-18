@@ -18,7 +18,7 @@ def main():
         'or': ['110', '0000000'],
         'and': ['111', '0000000']
     }
-    
+
     a = input("Enter input file name: ")
     b = input("Enter output file name: ")
     
@@ -26,35 +26,45 @@ def main():
     f2 = open(b, 'w')
     
     num = 0
+
     for l in f1:
         num += 1
         l = l.strip()
         if l == "":
             continue
+
         if ':' in l:
             l = l.split(':',1)[1].strip()
         p = l.replace(',',' ').split()
+
         if len(p) == 0:
             continue
+
         op = p[0]
+
         if op not in ops:
             print("Error: Wrong operation found!", num)
             return
+        
         if len(p) != 4:
             print("Error: Wrong number of arguments found!", num)
             return
-        x, y, z = p[1], p[2], p[3]
+        
+        x,y,z = p[1],p[2],p[3]
+
         if x not in rgs or y not in rgs or z not in rgs:
             print("Error: Bad register found!", num)
             return
-        f7, f3 = ops[op]
-        r1, r2, r3 = rgs[x], rgs[y], rgs[z]
+        
+        f7,f3 = ops[op]
+        r1,r2,r3 = rgs[x],rgs[y],rgs[z]
         opcd = '0110011'
-        bincode = f7 + r3 + r2 + f3 + r1 + opcd
+        bincode = f7+r3+r2+f3+r1+opcd
+
         if len(bincode) != 32:
-            print("Oops 32 bits not made at line", num)
+            print("Error: 32 bits not made at line", num)
             return
-        f2.write(bincode + '\n')
+        f2.write(bincode+'\n')
      
     f1.close()
     f2.close()
