@@ -1,7 +1,7 @@
 def sext(num, length):
     num=int(num)
     if num>=0:
-        result=format(num,f'0{length}b')
+        result = format(num, f'0{length}b')
     else:
         result=format(num&((1<<length)-1),f'0{length}b')
     return result
@@ -39,7 +39,21 @@ def main():
     
     f1 = open(a, 'r')
     f2 = open(b, 'w')
-    
+    labels = {}     #Added
+    num = 0
+                    #Added: First Pass to Collect Label Addresses
+    for l in f1:
+        l = l.strip()
+        if l == "":
+            continue
+        if ':' in l:  
+            label = l.split(':', 1)[0].strip()  
+            labels[label] = num  #Store label and its line number
+            l = l.split(':', 1)[1].strip()
+        if l:
+            num += 1  
+
+    f1.seek(0) #Reset file pointer for second pass
     num = 0
 
     for l in f1:
@@ -109,10 +123,16 @@ def main():
             if len(p) != 4:
                 print("Error: Wrong number of arguments found!", num)
                 return
+            # Replace label with offset for branches
+            if z in labels:
+                offset = labels[z] - num
+            else:
+                offset = int(z)
             r1,r2=rgs[x],rgs[y]
-            imm=sext(z,13)
-            imm=imm[:-1]
-            bincode=imm[0]+imm[2:7]+r2+r1+f3+imm[7:]+imm[1]+opcd
+            imm = sext(offset, 13)
+            imm = imm[:-1]
+            bincode = imm[0]+imm[2:7]+r2+r1+f3+imm[7:]+imm[1]+opcd
+            
         elif type=="J":
             opcd,type=ops[op]
             x,z=p[1],p[2]
@@ -123,8 +143,14 @@ def main():
                 print("Error: Wrong number of arguments found!", num)
                 return
             r=rgs[x]
-            imm=sext(z,20)
-            bincode=imm[0]+imm[10:]+imm[9]+imm[1:9]+r+opcd
+            #Replace label with offset for jumps
+            if z in labels:
+                offset = labels[z] - num
+            else:
+                offset = int(z)
+            imm=sext(offset,20)
+            bincode=imm[0]+imm[10:20]+imm[9]+imm[1:9]+r1+opcd
+
         if len(bincode) != 32:
             print("Error: 32 bits not made at line", num)
             return
