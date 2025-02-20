@@ -1,9 +1,9 @@
 import sys
 
-def sext(num, length):
+def sext(num,length):
     num=int(num)
     if num>=0:
-        result = format(num, f'0{length}b')
+        result=format(num,f'0{length}b')
     else:
         result=format(num&((1<<length)-1),f'0{length}b')
     return result
@@ -20,12 +20,12 @@ def main():
         't3': '11100','t4': '11101','t5': '11110','t6': '11111'
     }
     ops={
-        'add': ['000', '0000000', '0110011','R'],
-        'sub': ['000', '0100000', '0110011','R'],
-        'slt': ['010', '0000000', '0110011','R'],
-        'srl': ['101', '0000000', '0110011','R'],
-        'or':  ['110', '0000000', '0110011','R'],
-        'and': ['111', '0000000', '0110011','R'],
+        'add': ['000','0000000','0110011','R'],
+        'sub': ['000','0100000','0110011','R'],
+        'slt': ['010','0000000','0110011','R'],
+        'srl': ['101','0000000','0110011','R'],
+        'or':  ['110','0000000','0110011','R'],
+        'and': ['111','0000000','0110011','R'],
         'lw':  ['010','0000011','I'],
         'addi':['000','0010011','I'],
         'jalr':['000','1100111','I'],
@@ -34,6 +34,7 @@ def main():
         'bne': ['001','1100011','B'],
         'jal': ['1101111','J']
     }
+    
     a=sys.argv[1]
     b=sys.argv[2]
     f1=open(a,'r')
@@ -72,6 +73,7 @@ def main():
             error=True
             return
         type=ops[op][-1]
+        
         if type=='R':
             f3,f7,opcd,type=ops[op]
             if len(p)!=4:
@@ -152,10 +154,12 @@ def main():
                 error=True
                 return
             r1=rgs[x]
+            
             if z in labels:
                 offset=4*(labels[z] - num +1)
             else:
                 offset=int(z)
+                
             imm=sext(offset,21)
             bincode=imm[0]+imm[10:20]+imm[9]+imm[1:9]+r1+opcd
 
@@ -163,12 +167,12 @@ def main():
             print(f"Error: 32 bits not made at line {num}")
             error=True
             return
+            
         results.append(bincode)
-
+        
     if not error:
         for i in results:
             f2.write(i+'\n')
     f1.close()
     f2.close()
-
 main()
