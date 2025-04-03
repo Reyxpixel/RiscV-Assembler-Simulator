@@ -32,7 +32,9 @@ def main():
         'sw':  ['010','0100011','S'],
         'beq': ['000','1100011','B'],
         'bne': ['001','1100011','B'],
-        'jal': ['1101111','J']
+        'jal': ['1101111','J'],
+        'rst':['00000000000000000000000000000000','bonus'],
+        'halt':['11111111111111111111111111111111','bonus']
     }
     
     a=sys.argv[1]
@@ -162,6 +164,9 @@ def main():
                 
             imm=sext(offset,21)
             bincode=imm[0]+imm[10:20]+imm[9]+imm[1:9]+r1+opcd
+
+        elif type=="bonus":
+            bincode=ops[op][0]
 
         if len(bincode)!=32:
             print(f"Error: 32 bits not made at line {num}")
