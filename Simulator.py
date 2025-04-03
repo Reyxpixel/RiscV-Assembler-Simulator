@@ -16,15 +16,15 @@ def sext(num,length):
     return result
 
 def main():
-    rgs={
-        'zero': '00000','ra': '00001','sp': '00010','gp': '00011',
-        'tp': '00100','t0': '00101','t1': '00110','t2': '00111',
-        's0': '01000','s1': '01001','a0': '01010','a1': '01011',
-        'a2': '01100','a3': '01101','a4': '01110','a5': '01111',
-        'a6': '10000','a7': '10001','s2': '10010','s3': '10011',
-        's4': '10100','s5': '10101','s6': '10110','s7': '10111',
-        's8': '11000','s9': '11001','s10': '11010','s11': '11011',
-        't3': '11100','t4': '11101','t5': '11110','t6': '11111'
+    mem={
+        "0x00010000":0, "0x00010004":0, "0x00010008":0, "0x0001000C":0,
+        "0x00010010":0, "0x00010014":0, "0x00010018":0, "0x0001001C":0,
+        "0x00010020":0, "0x00010024":0, "0x00010028":0, "0x0001002C":0,
+        "0x00010030":0, "0x00010034":0, "0x00010038":0, "0x0001003C":0,
+        "0x00010040":0, "0x00010044":0, "0x00010048":0, "0x0001004C":0,
+        "0x00010050":0, "0x00010054":0, "0x00010058":0, "0x0001005C":0,
+        "0x00010060":0, "0x00010064":0, "0x00010068":0, "0x0001006C":0,
+        "0x00010070":0, "0x00010074":0, "0x00010078":0, "0x0001007C":0
     }
     ops={
         '00000000000110011':['add','R'],
@@ -43,13 +43,14 @@ def main():
     }
     a=str(input("Enter input file name: "))
     b=str(input("Enter output file name: "))
-    f=open(a,"r")
+    f1=open(a,"r")
+    f2=open(b,"w")
     arr=[0]*32
     arr[2]=380
     pc=0
     datamem=0
     out=[]
-    for l in f:
+    for l in f1:
         l=l.strip("\n")
         f7=l[:7]
         f3=l[17:20]
@@ -86,29 +87,56 @@ def main():
                 rs1=int(l[12:17],2)
                 rd=int(l[20:25],2)
                 instr=x[0]+" "+str(rd)+" "+str(rs1)+" "+str(twocomp(imm))
+                if x[0]=="lw":
+                    arr[rd]=sext(mem[format(int((arr[rs1],"032b")+sext(imm,32),2),"08X")],32)
+                elif x[0]=="addi":
+                    arr[rd]=arr[rs1]+int(imm,2)
+                elif x[0]=="jalr":
+                    arr[rd]=pc+4
+                    pc=arr[6]+int(imm,2)
+                else:
+                    print("Error")
             elif x[1]=="S":
                 imm=l[:7]+l[20:25]
-                rs2=rgs[l[7:12]]
-                rs1=rgs[l[12:17]]
-                instr=x[0]+" "+rs2+" "+str(twocomp(imm))+" "+rs1
+                rs2=int([l[7:12]],2)
+                rs1=int([l[12:17]],2)
+                instr=x[0]+" "+str(rs2)+" "+str(twocomp(imm))+" "+str(rs1)
+                if x[0]=="sw":
+                    mem[format(int(format(arr[rs1],"032b")+sext(imm,32),2),"08X")]=rs2
+                else:
+                    print("Error")
             elif x[1]=="B":
                 imm=l[0]+l[24]+l[2:7]+l[20:24]
-                rs2=rgs[l[7:12]]
-                rs1=rgs[l[12:17]]
-                instr=x[0]+" "+rs1+" "+rs2+" "+str(twocomp(imm))
+                rs2=int(l[7:12],2)
+                rs1=int(l[12:17],2)
+                instr=x[0]+" "+str(rs1)+" "+str(rs2)+" "+str(twocomp(imm))
+                if x[0]=="beq":
+                    if rs1==rs2:
+                        pc+=int(sext(imm+"0",32),2)
+                elif x[0]=="bne":
+                    if rs1!=rs2:
+                        pc+=int(sext(imm+"0",32),2)
+                else:
+                    print("Error")
             else:
                 print("Error")
         elif opcd in ops:
             x=ops[opcd]
             imm=l[0]+l[11:20]+l[1:10]+l[10]
-            rd=l[20:25]
-            instr=x[0]+" "+rd+" "+str(twocomp(imm))
+            rd=int(l[20:25],2)
+            instr=x[0]+" "+str(rd)+" "+str(twocomp(imm))
+            if x[0]=="jal":
+                rd=pc+4
+                pc+=int(sext(imm+"0",32),2)
+            else:
+                print("Error")
         else:
             print("Error")
-        print(instr)
+        f2.write(instr)
+        f2.write("\n")
         pc+=4
-        print("0b"+format(pc,"032b"),end=" ")
+        f2.write("0b"+format(pc,"032b")+" ")
         for i in arr:
-            print("0b"+format(i,"032b"),end=" ")
-        print()
+            f2.write("0b"+format(i,"032b")+" ")
+        f2.write("\n")
 main()
