@@ -1,5 +1,4 @@
 # RiscV-Assembler-Simulator
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/Reyxpixel/RiscV-Assembler-Simulator)
 
 This project provides a command-line toolset for assembling and simulating a subset of the 32-bit RISC-V instruction set architecture. It consists of two main Python scripts: an assembler that converts RISC-V assembly code into binary machine code, and a simulator that executes this machine code.
 
